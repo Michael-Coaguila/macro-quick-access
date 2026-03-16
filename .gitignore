@@ -1,0 +1,32 @@
+# User configuration (auto-generated on first run)
+profiles.json
+perfiles_backup.json
+
+# Logs
+*.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Build / distribution
+dist/
+build/
+*.spec
+*.egg-info/
+
+# IDEs
+.vscode/
+.idea/
+*.suo
+
+# OS files
+.DS_Store
+Thumbs.db

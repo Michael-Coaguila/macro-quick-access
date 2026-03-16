@@ -1,0 +1,44 @@
+{
+  "active_profile": "General",
+  "window_pos": [100, 100],
+  "window_opacity": 0.9,
+  "window_size": [245, 205],
+  "edit_size": [380, 700],
+  "button_size": [55, 62],
+  "pinned_profile": "",
+  "profiles": {
+    "General": {
+      "buttons": [
+        {"label": "Copy",       "hotkey": "ctrl+c",       "color": "#2980B9"},
+        {"label": "Paste",      "hotkey": "ctrl+v",       "color": "#2980B9"},
+        {"label": "Cut",        "hotkey": "ctrl+x",       "color": "#2980B9"},
+        {"label": "Undo",       "hotkey": "ctrl+z",       "color": "#E67E22"},
+        {"label": "Redo",       "hotkey": "ctrl+y",       "color": "#E67E22"},
+        {"label": "Save",       "hotkey": "ctrl+s",       "color": "#27AE60"},
+        {"label": "Select All", "hotkey": "ctrl+a",       "color": "#8E44AD"},
+        {"label": "Find",       "hotkey": "ctrl+f",       "color": "#8E44AD"},
+        {"label": "Close",      "hotkey": "alt+f4",       "color": "#C0392B"}
+      ],
+      "buttons_per_page": 9,
+      "process": ""
+    },
+    "Browser": {
+      "buttons": [
+        {"label": "New Tab",    "hotkey": "ctrl+t",        "color": "#2980B9"},
+        {"label": "Close Tab",  "hotkey": "ctrl+w",        "color": "#C0392B"},
+        {"label": "Reopen Tab", "hotkey": "ctrl+shift+t",  "color": "#E67E22"},
+        {"label": "Next Tab",   "hotkey": "ctrl+tab",      "color": "#16A085"},
+        {"label": "Prev Tab",   "hotkey": "ctrl+shift+tab","color": "#16A085"},
+        {"label": "Reload",     "hotkey": "f5",            "color": "#27AE60"},
+        {"label": "Address Bar","hotkey": "ctrl+l",        "color": "#8E44AD"},
+        {"label": "Dev Tools",  "hotkey": "f12",           "color": "#7F8C8D"},
+        {"label": "Zoom In",    "hotkey": "ctrl+plus",     "color": "#F39C12"},
+        {"label": "Zoom Out",   "hotkey": "ctrl+minus",    "color": "#F39C12"},
+        {"label": "Open URL",   "type": "url", "action": "https://example.com", "color": "#2980B9"},
+        {"label": "Notepad",    "type": "app", "action": "notepad.exe",         "color": "#7F8C8D"}
+      ],
+      "buttons_per_page": 9,
+      "process": "chrome.exe"
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find 'C:\\\\Users\\\\maico\\\\OneDrive\\\\Documentos\\\\Macro Quick Access' -type f -name *)",
+      "Bash(python -m py_compile overlay.py)",
+      "Bash(python -m py_compile edit_panel.py)",
+      "Bash(python -m py_compile main.py)",
+      "Bash(ls -lh \"C:\\\\Users\\\\maico\\\\OneDrive\\\\Documentos\\\\Macro Quick Access\"/*.py \"C:\\\\Users\\\\maico\\\\OneDrive\\\\Documentos\\\\Macro Quick Access\"/*.json)",
+      "Bash(grep -n \"class.*Manager\\\\|class.*Profile\" \"/c/Users/maico/OneDrive/Documentos/Macro Quick Access\"/*.py)",
+      "Bash(identify \"/c/Users/maico/OneDrive/Documentos/Macro Quick Access/icon_collapsed.png\")"
+    ]
+  }
+}
