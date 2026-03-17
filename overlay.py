@@ -360,17 +360,17 @@ class ResizeHandle(QLabel):
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
-            self.window()._start_resize(event.globalPos())
+            self.parent()._start_resize(event.globalPos())
         super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
         if event.buttons() == Qt.LeftButton:
-            self.window()._do_resize(event.globalPos())
+            self.parent()._do_resize(event.globalPos())
         super().mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.LeftButton:
-            self.window()._end_resize()
+            self.parent()._end_resize()
         super().mouseReleaseEvent(event)
 
 
@@ -640,7 +640,9 @@ class OverlayWindow(QWidget):
 
         self._build_ui()
 
-        # (el resize handle se crea dentro de _build_ui, integrado en _nav_bar)
+        # Handle de resize: hijo flotante de OverlayWindow, visible en uso y edición
+        self._resize_handle = ResizeHandle(self)
+        self._resize_handle.raise_()
 
         # Arrancar siempre con ancho compacto; _fit_height recalcula la altura
         _startup_w = self.COLUMNS * 68 + 22   # ≈ 226 px (3 col × 68 + márgenes)
@@ -711,10 +713,11 @@ class OverlayWindow(QWidget):
         # B2: filtro de swipe horizontal para paginar
         self._swipe_filter = SwipeFilter(self._btn_widget, parent=self)
         QApplication.instance().installEventFilter(self._swipe_filter)
+        # Carrusel: swipe funciona aunque los botones estén ocultos (wrap-around)
         self._swipe_filter.swipe_left.connect(
-            lambda: self._next_page() if self._next_btn.isEnabled() else None)
+            lambda: getattr(self, '_total_pages', 1) > 1 and self._next_page())
         self._swipe_filter.swipe_right.connect(
-            lambda: self._prev_page() if self._prev_btn.isEnabled() else None)
+            lambda: getattr(self, '_total_pages', 1) > 1 and self._prev_page())
 
         # Tab bar para perfil base — oculta hasta que se configure un pin
         self._tab_bar = self._build_tab_bar()
@@ -723,7 +726,7 @@ class OverlayWindow(QWidget):
         # Barra de navegación — siempre visible en modo uso (tiene botón ＋)
         self._nav_bar = QWidget()
         nav_h = QHBoxLayout(self._nav_bar)
-        nav_h.setContentsMargins(0, 2, 0, 0)
+        nav_h.setContentsMargins(0, 2, 26, 0)   # 26px derecha: espacio para el ⊿ flotante
         nav_h.setSpacing(4)
 
         # ── Controles de vista: opacidad + tamaño (movidos de la top bar) ────
@@ -773,10 +776,6 @@ class OverlayWindow(QWidget):
         nav_h.addWidget(self._prev_btn)
         nav_h.addWidget(self._page_label, 1)
         nav_h.addWidget(self._next_btn)
-
-        # Handle de resize dentro del nav_bar (esquina inferior-derecha natural)
-        self._resize_handle = ResizeHandle(self._nav_bar)
-        nav_h.addWidget(self._resize_handle)
 
         self._nav_bar.show()   # siempre visible en uso (el ＋ siempre está)
         self._main_layout.addWidget(self._nav_bar)
@@ -1079,8 +1078,9 @@ class OverlayWindow(QWidget):
         # Ejecutar el colapso normal: ocultar contenido, mostrar expand_btn
         self._top_bar.hide()
         self._content_area.hide()
-        self._nav_bar.hide()   # oculta también el handle ⊿ que vive dentro
+        self._nav_bar.hide()
         self._tab_bar.hide()
+        self._resize_handle.hide()
         self._profile_name_label.hide()   # S8
         self._expand_btn.show()
         self._pre_collapse_mode = self._mode   # recordar qué modo estaba activo
@@ -1130,7 +1130,8 @@ class OverlayWindow(QWidget):
         self.update()   # repintar fondo del overlay ahora que ya no estamos en "collapsed"
         self._top_bar.show()
         self._content_area.show()
-        # (el resize handle se muestra con nav_bar en cada rama)
+        self._resize_handle.show()
+        self._resize_handle.raise_()
 
         screen = QApplication.primaryScreen().availableGeometry()
 
@@ -1151,12 +1152,9 @@ class OverlayWindow(QWidget):
             self._size_up_btn.hide()
             self._pin_btn.hide()
             self._quick_add_btn.hide()
-            self._prev_btn.hide()
-            self._page_label.hide()
-            self._next_btn.hide()
+            self._nav_bar.hide()
             self._done_btn.show()
             self._profile_combo.setEnabled(False)
-            self._nav_bar.show()   # visible para el handle ⊿
 
             target_w, target_h = self._pm.get_edit_size()
             new_x = max(screen.left(), min(self.x(), screen.right() - target_w))
@@ -1238,11 +1236,7 @@ class OverlayWindow(QWidget):
         self._size_up_btn.hide()
         self._pin_btn.hide()
         self._quick_add_btn.hide()   # B3: ocultar ＋ en modo edición
-        self._prev_btn.hide()
-        self._page_label.hide()
-        self._next_btn.hide()
-        # nav_bar se mantiene visible en edición para que el handle ⊿ sea accesible
-        self._nav_bar.show()
+        self._nav_bar.hide()         # en edición la fila inferior no es necesaria
         self._done_btn.show()
         self._mode = "edit"
         self.setWindowOpacity(1.0)   # Edición siempre completamente opaca
@@ -1437,8 +1431,12 @@ class OverlayWindow(QWidget):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        # El timer ya no dispara recargas: el reload por resize del usuario
-        # lo hace _end_resize directamente, sin riesgo de loop.
+        if hasattr(self, '_resize_handle'):
+            self._resize_handle.move(
+                self.width()  - self._resize_handle.width()  - 4,
+                self.height() - self._resize_handle.height() - 4,
+            )
+            self._resize_handle.raise_()
 
     # ── Pintar fondo redondeado ───────────────────────────────────────────────
 
@@ -1513,6 +1511,7 @@ class OverlayWindow(QWidget):
         if self._mode == "use":
             self.setWindowOpacity(self._pm.get_opacity())
             self._process_timer.start()   # A1: reanudar auto-switch al hacerse visible
+            self._update_tab_bar()        # sincronizar tab bar al primer renderizado
         else:
             self.setWindowOpacity(1.0)
         if WIN32_AVAILABLE:

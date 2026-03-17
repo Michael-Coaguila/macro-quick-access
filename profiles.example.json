@@ -7,38 +7,252 @@
   "button_size": [55, 62],
   "pinned_profile": "",
   "profiles": {
+
     "General": {
-      "buttons": [
-        {"label": "Copy",       "hotkey": "ctrl+c",       "color": "#2980B9"},
-        {"label": "Paste",      "hotkey": "ctrl+v",       "color": "#2980B9"},
-        {"label": "Cut",        "hotkey": "ctrl+x",       "color": "#2980B9"},
-        {"label": "Undo",       "hotkey": "ctrl+z",       "color": "#E67E22"},
-        {"label": "Redo",       "hotkey": "ctrl+y",       "color": "#E67E22"},
-        {"label": "Save",       "hotkey": "ctrl+s",       "color": "#27AE60"},
-        {"label": "Select All", "hotkey": "ctrl+a",       "color": "#8E44AD"},
-        {"label": "Find",       "hotkey": "ctrl+f",       "color": "#8E44AD"},
-        {"label": "Close",      "hotkey": "alt+f4",       "color": "#C0392B"}
-      ],
+      "process": "",
       "buttons_per_page": 9,
-      "process": ""
+      "buttons": [
+        {"label": "Copy",       "hotkey": "ctrl+c",           "color": "#2980B9"},
+        {"label": "Paste",      "hotkey": "ctrl+v",           "color": "#2980B9"},
+        {"label": "Cut",        "hotkey": "ctrl+x",           "color": "#2980B9"},
+        {"label": "Undo",       "hotkey": "ctrl+z",           "color": "#E67E22"},
+        {"label": "Redo",       "hotkey": "ctrl+y",           "color": "#E67E22"},
+        {"label": "Save",       "hotkey": "ctrl+s",           "color": "#27AE60"},
+        {"label": "Select All", "hotkey": "ctrl+a",           "color": "#8E44AD"},
+        {"label": "Find",       "hotkey": "ctrl+f",           "color": "#8E44AD"},
+        {"label": "Print",      "hotkey": "ctrl+p",           "color": "#7F8C8D"},
+        {"label": "New",        "hotkey": "ctrl+n",           "color": "#27AE60"},
+        {"label": "Open",       "hotkey": "ctrl+o",           "color": "#27AE60"},
+        {"label": "Close Win",  "hotkey": "alt+f4",           "color": "#C0392B"},
+        {"label": "Screenshot", "hotkey": "win+shift+s",      "color": "#16A085"},
+        {"label": "Task Mgr",   "hotkey": "ctrl+shift+esc",   "color": "#7F8C8D"},
+        {"label": "Lock PC",    "hotkey": "win+l",            "color": "#7F8C8D"}
+      ]
     },
-    "Browser": {
-      "buttons": [
-        {"label": "New Tab",    "hotkey": "ctrl+t",        "color": "#2980B9"},
-        {"label": "Close Tab",  "hotkey": "ctrl+w",        "color": "#C0392B"},
-        {"label": "Reopen Tab", "hotkey": "ctrl+shift+t",  "color": "#E67E22"},
-        {"label": "Next Tab",   "hotkey": "ctrl+tab",      "color": "#16A085"},
-        {"label": "Prev Tab",   "hotkey": "ctrl+shift+tab","color": "#16A085"},
-        {"label": "Reload",     "hotkey": "f5",            "color": "#27AE60"},
-        {"label": "Address Bar","hotkey": "ctrl+l",        "color": "#8E44AD"},
-        {"label": "Dev Tools",  "hotkey": "f12",           "color": "#7F8C8D"},
-        {"label": "Zoom In",    "hotkey": "ctrl+plus",     "color": "#F39C12"},
-        {"label": "Zoom Out",   "hotkey": "ctrl+minus",    "color": "#F39C12"},
-        {"label": "Open URL",   "type": "url", "action": "https://example.com", "color": "#2980B9"},
-        {"label": "Notepad",    "type": "app", "action": "notepad.exe",         "color": "#7F8C8D"}
-      ],
+
+    "Chrome": {
+      "process": "chrome.exe",
       "buttons_per_page": 9,
-      "process": "chrome.exe"
+      "buttons": [
+        {"label": "New Tab",    "hotkey": "ctrl+t",           "color": "#2980B9"},
+        {"label": "Close Tab",  "hotkey": "ctrl+w",           "color": "#C0392B"},
+        {"label": "Reopen Tab", "hotkey": "ctrl+shift+t",     "color": "#E67E22"},
+        {"label": "Next Tab",   "hotkey": "ctrl+tab",         "color": "#2980B9"},
+        {"label": "Prev Tab",   "hotkey": "ctrl+shift+tab",   "color": "#2980B9"},
+        {"label": "Refresh",    "hotkey": "ctrl+r",           "color": "#27AE60"},
+        {"label": "Back",       "hotkey": "alt+left",         "color": "#8E44AD"},
+        {"label": "Forward",    "hotkey": "alt+right",        "color": "#8E44AD"},
+        {"label": "Bookmark",   "hotkey": "ctrl+d",           "color": "#F39C12"},
+        {"label": "Address Bar","hotkey": "ctrl+l",           "color": "#2980B9"},
+        {"label": "History",    "hotkey": "ctrl+h",           "color": "#7F8C8D"},
+        {"label": "Downloads",  "hotkey": "ctrl+j",           "color": "#7F8C8D"},
+        {"label": "Find",       "hotkey": "ctrl+f",           "color": "#8E44AD"},
+        {"label": "Zoom In",    "hotkey": "ctrl+=",           "color": "#27AE60"},
+        {"label": "Zoom Out",   "hotkey": "ctrl+-",           "color": "#E67E22"},
+        {"label": "Full Screen","hotkey": "f11",              "color": "#7F8C8D"},
+        {"label": "Incognito",  "hotkey": "ctrl+shift+n",     "color": "#7F8C8D"},
+        {"label": "Dev Tools",  "hotkey": "f12",              "color": "#7F8C8D"}
+      ]
+    },
+
+    "Firefox": {
+      "process": "firefox.exe",
+      "buttons_per_page": 9,
+      "buttons": [
+        {"label": "New Tab",    "hotkey": "ctrl+t",           "color": "#E67E22"},
+        {"label": "Close Tab",  "hotkey": "ctrl+w",           "color": "#C0392B"},
+        {"label": "Reopen Tab", "hotkey": "ctrl+shift+t",     "color": "#E67E22"},
+        {"label": "Next Tab",   "hotkey": "ctrl+tab",         "color": "#E67E22"},
+        {"label": "Prev Tab",   "hotkey": "ctrl+shift+tab",   "color": "#E67E22"},
+        {"label": "Refresh",    "hotkey": "ctrl+r",           "color": "#27AE60"},
+        {"label": "Back",       "hotkey": "alt+left",         "color": "#8E44AD"},
+        {"label": "Forward",    "hotkey": "alt+right",        "color": "#8E44AD"},
+        {"label": "Bookmark",   "hotkey": "ctrl+d",           "color": "#F39C12"},
+        {"label": "Address Bar","hotkey": "ctrl+l",           "color": "#E67E22"},
+        {"label": "History",    "hotkey": "ctrl+h",           "color": "#7F8C8D"},
+        {"label": "Downloads",  "hotkey": "ctrl+j",           "color": "#7F8C8D"},
+        {"label": "Find",       "hotkey": "ctrl+f",           "color": "#8E44AD"},
+        {"label": "Zoom In",    "hotkey": "ctrl+=",           "color": "#27AE60"},
+        {"label": "Zoom Out",   "hotkey": "ctrl+-",           "color": "#E67E22"},
+        {"label": "Full Screen","hotkey": "f11",              "color": "#7F8C8D"},
+        {"label": "Private",    "hotkey": "ctrl+shift+p",     "color": "#7F8C8D"},
+        {"label": "Dev Tools",  "hotkey": "f12",              "color": "#7F8C8D"}
+      ]
+    },
+
+    "VS Code": {
+      "process": "code.exe",
+      "buttons_per_page": 9,
+      "buttons": [
+        {"label": "Terminal",   "hotkey": "ctrl+`",           "color": "#16A085"},
+        {"label": "Cmd Palette","hotkey": "ctrl+shift+p",     "color": "#2980B9"},
+        {"label": "Quick Open", "hotkey": "ctrl+p",           "color": "#2980B9"},
+        {"label": "Comment",    "hotkey": "ctrl+/",           "color": "#8E44AD"},
+        {"label": "Format",     "hotkey": "shift+alt+f",      "color": "#27AE60"},
+        {"label": "Go to Def",  "hotkey": "f12",              "color": "#F39C12"},
+        {"label": "Find",       "hotkey": "ctrl+f",           "color": "#8E44AD"},
+        {"label": "Replace",    "hotkey": "ctrl+h",           "color": "#8E44AD"},
+        {"label": "Save",       "hotkey": "ctrl+s",           "color": "#27AE60"},
+        {"label": "Sidebar",    "hotkey": "ctrl+b",           "color": "#7F8C8D"},
+        {"label": "Explorer",   "hotkey": "ctrl+shift+e",     "color": "#2980B9"},
+        {"label": "Git",        "hotkey": "ctrl+shift+g",     "color": "#F39C12"},
+        {"label": "Dup Line",   "hotkey": "shift+alt+down",   "color": "#E67E22"},
+        {"label": "Del Line",   "hotkey": "ctrl+shift+k",     "color": "#C0392B"},
+        {"label": "Rename",     "hotkey": "f2",               "color": "#F39C12"},
+        {"label": "Run",        "hotkey": "f5",               "color": "#27AE60"},
+        {"label": "Breakpoint", "hotkey": "f9",               "color": "#C0392B"},
+        {"label": "Zen Mode",   "hotkey": "ctrl+k z",         "color": "#7F8C8D"}
+      ]
+    },
+
+    "Word": {
+      "process": "winword.exe",
+      "buttons_per_page": 9,
+      "buttons": [
+        {"label": "Bold",       "hotkey": "ctrl+b",           "color": "#2980B9"},
+        {"label": "Italic",     "hotkey": "ctrl+i",           "color": "#2980B9"},
+        {"label": "Underline",  "hotkey": "ctrl+u",           "color": "#2980B9"},
+        {"label": "Align Left", "hotkey": "ctrl+l",           "color": "#7F8C8D"},
+        {"label": "Center",     "hotkey": "ctrl+e",           "color": "#7F8C8D"},
+        {"label": "Justify",    "hotkey": "ctrl+j",           "color": "#7F8C8D"},
+        {"label": "Bullet",     "hotkey": "ctrl+shift+l",     "color": "#8E44AD"},
+        {"label": "Find",       "hotkey": "ctrl+f",           "color": "#8E44AD"},
+        {"label": "Replace",    "hotkey": "ctrl+h",           "color": "#8E44AD"},
+        {"label": "Spell",      "hotkey": "f7",               "color": "#27AE60"},
+        {"label": "Zoom In",    "hotkey": "ctrl+=",           "color": "#E67E22"},
+        {"label": "Save As",    "hotkey": "f12",              "color": "#27AE60"}
+      ]
+    },
+
+    "Excel": {
+      "process": "excel.exe",
+      "buttons_per_page": 9,
+      "buttons": [
+        {"label": "Sum",        "hotkey": "alt+=",            "color": "#27AE60"},
+        {"label": "Bold",       "hotkey": "ctrl+b",           "color": "#2980B9"},
+        {"label": "Italic",     "hotkey": "ctrl+i",           "color": "#2980B9"},
+        {"label": "Format",     "hotkey": "ctrl+1",           "color": "#2980B9"},
+        {"label": "Filter",     "hotkey": "ctrl+shift+l",     "color": "#8E44AD"},
+        {"label": "Find",       "hotkey": "ctrl+f",           "color": "#8E44AD"},
+        {"label": "Ins Row",    "hotkey": "ctrl+shift+=",     "color": "#27AE60"},
+        {"label": "Del Row",    "hotkey": "ctrl+-",           "color": "#C0392B"},
+        {"label": "Fill Down",  "hotkey": "ctrl+d",           "color": "#E67E22"},
+        {"label": "Fill Right", "hotkey": "ctrl+r",           "color": "#E67E22"},
+        {"label": "New Sheet",  "hotkey": "shift+f11",        "color": "#F39C12"},
+        {"label": "Save As",    "hotkey": "f12",              "color": "#27AE60"}
+      ]
+    },
+
+    "PowerPoint": {
+      "process": "powerpnt.exe",
+      "buttons_per_page": 9,
+      "buttons": [
+        {"label": "New Slide",  "hotkey": "ctrl+m",           "color": "#E74C3C"},
+        {"label": "Dup Slide",  "hotkey": "ctrl+d",           "color": "#E67E22"},
+        {"label": "Bold",       "hotkey": "ctrl+b",           "color": "#2980B9"},
+        {"label": "Italic",     "hotkey": "ctrl+i",           "color": "#2980B9"},
+        {"label": "Center",     "hotkey": "ctrl+e",           "color": "#7F8C8D"},
+        {"label": "Find",       "hotkey": "ctrl+f",           "color": "#8E44AD"},
+        {"label": "Replace",    "hotkey": "ctrl+h",           "color": "#8E44AD"},
+        {"label": "Slideshow",  "hotkey": "f5",               "color": "#27AE60"},
+        {"label": "Slide From", "hotkey": "shift+f5",         "color": "#27AE60"},
+        {"label": "Zoom In",    "hotkey": "ctrl+=",           "color": "#E67E22"},
+        {"label": "Group",      "hotkey": "ctrl+g",           "color": "#8E44AD"},
+        {"label": "Ungroup",    "hotkey": "ctrl+shift+g",     "color": "#8E44AD"}
+      ]
+    },
+
+    "Zoom": {
+      "process": "zoom.exe",
+      "buttons_per_page": 9,
+      "buttons": [
+        {"label": "Mute",       "hotkey": "alt+a",            "color": "#C0392B"},
+        {"label": "Video",      "hotkey": "alt+v",            "color": "#E67E22"},
+        {"label": "Share",      "hotkey": "alt+s",            "color": "#2980B9"},
+        {"label": "Chat",       "hotkey": "alt+h",            "color": "#2980B9"},
+        {"label": "Raise Hand", "hotkey": "alt+y",            "color": "#F39C12"},
+        {"label": "Attendees",  "hotkey": "alt+u",            "color": "#8E44AD"},
+        {"label": "Record",     "hotkey": "alt+r",            "color": "#C0392B"},
+        {"label": "End Meeting","hotkey": "alt+q",            "color": "#C0392B"},
+        {"label": "Full Screen","hotkey": "alt+f",            "color": "#7F8C8D"}
+      ]
+    },
+
+    "Teams": {
+      "process": "ms-teams.exe",
+      "buttons_per_page": 9,
+      "buttons": [
+        {"label": "Mute",       "hotkey": "ctrl+shift+m",     "color": "#C0392B"},
+        {"label": "Video",      "hotkey": "ctrl+shift+o",     "color": "#E67E22"},
+        {"label": "Share",      "hotkey": "ctrl+shift+e",     "color": "#2980B9"},
+        {"label": "Chat",       "hotkey": "ctrl+shift+i",     "color": "#2980B9"},
+        {"label": "Raise Hand", "hotkey": "ctrl+shift+k",     "color": "#F39C12"},
+        {"label": "Accept Call","hotkey": "ctrl+shift+a",     "color": "#27AE60"},
+        {"label": "Decline",    "hotkey": "ctrl+shift+d",     "color": "#C0392B"},
+        {"label": "Activity",   "hotkey": "ctrl+1",           "color": "#8E44AD"},
+        {"label": "Teams",      "hotkey": "ctrl+3",           "color": "#8E44AD"}
+      ]
+    },
+
+    "Photoshop": {
+      "process": "photoshop.exe",
+      "buttons_per_page": 9,
+      "buttons": [
+        {"label": "Brush",      "hotkey": "b",                "color": "#E74C3C"},
+        {"label": "Eraser",     "hotkey": "e",                "color": "#7F8C8D"},
+        {"label": "Move",       "hotkey": "v",                "color": "#2980B9"},
+        {"label": "Crop",       "hotkey": "c",                "color": "#F39C12"},
+        {"label": "Select",     "hotkey": "m",                "color": "#8E44AD"},
+        {"label": "Lasso",      "hotkey": "l",                "color": "#8E44AD"},
+        {"label": "Zoom In",    "hotkey": "ctrl+=",           "color": "#27AE60"},
+        {"label": "Zoom Out",   "hotkey": "ctrl+-",           "color": "#E67E22"},
+        {"label": "Fit Screen", "hotkey": "ctrl+0",           "color": "#2980B9"},
+        {"label": "New Layer",  "hotkey": "ctrl+shift+n",     "color": "#2980B9"},
+        {"label": "Merge Down", "hotkey": "ctrl+e",           "color": "#7F8C8D"},
+        {"label": "Levels",     "hotkey": "ctrl+l",           "color": "#16A085"},
+        {"label": "Curves",     "hotkey": "ctrl+m",           "color": "#16A085"},
+        {"label": "Deselect",   "hotkey": "ctrl+d",           "color": "#7F8C8D"},
+        {"label": "Undo",       "hotkey": "ctrl+z",           "color": "#E67E22"},
+        {"label": "History",    "hotkey": "ctrl+alt+z",       "color": "#E67E22"},
+        {"label": "Save Web",   "hotkey": "ctrl+shift+alt+s", "color": "#27AE60"},
+        {"label": "Flatten",    "hotkey": "ctrl+shift+e",     "color": "#C0392B"}
+      ]
+    },
+
+    "Notepad++": {
+      "process": "notepad++.exe",
+      "buttons_per_page": 9,
+      "buttons": [
+        {"label": "Find",       "hotkey": "ctrl+f",           "color": "#8E44AD"},
+        {"label": "Replace",    "hotkey": "ctrl+h",           "color": "#8E44AD"},
+        {"label": "Find All",   "hotkey": "ctrl+shift+f",     "color": "#8E44AD"},
+        {"label": "Comment",    "hotkey": "ctrl+q",           "color": "#7F8C8D"},
+        {"label": "New Tab",    "hotkey": "ctrl+t",           "color": "#2980B9"},
+        {"label": "Close Tab",  "hotkey": "ctrl+w",           "color": "#C0392B"},
+        {"label": "Next Tab",   "hotkey": "ctrl+tab",         "color": "#2980B9"},
+        {"label": "Dup Line",   "hotkey": "ctrl+d",           "color": "#E67E22"},
+        {"label": "Del Line",   "hotkey": "ctrl+shift+l",     "color": "#C0392B"},
+        {"label": "Upper Case", "hotkey": "ctrl+shift+u",     "color": "#F39C12"},
+        {"label": "Lower Case", "hotkey": "ctrl+u",           "color": "#F39C12"},
+        {"label": "Zoom In",    "hotkey": "ctrl+=",           "color": "#27AE60"}
+      ]
+    },
+
+    "File Explorer": {
+      "process": "explorer.exe",
+      "buttons_per_page": 9,
+      "buttons": [
+        {"label": "New Folder", "hotkey": "ctrl+shift+n",     "color": "#F39C12"},
+        {"label": "Rename",     "hotkey": "f2",               "color": "#F39C12"},
+        {"label": "Delete",     "hotkey": "delete",           "color": "#C0392B"},
+        {"label": "Properties", "hotkey": "alt+enter",        "color": "#7F8C8D"},
+        {"label": "Select All", "hotkey": "ctrl+a",           "color": "#8E44AD"},
+        {"label": "Copy Path",  "hotkey": "ctrl+shift+c",     "color": "#2980B9"},
+        {"label": "Address Bar","hotkey": "alt+d",            "color": "#2980B9"},
+        {"label": "Back",       "hotkey": "alt+left",         "color": "#8E44AD"},
+        {"label": "Forward",    "hotkey": "alt+right",        "color": "#8E44AD"}
+      ]
     }
+
   }
 }
