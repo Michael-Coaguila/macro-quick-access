@@ -119,7 +119,6 @@
         {"label": "Find",       "hotkey": "ctrl+f",           "color": "#8E44AD"},
         {"label": "Replace",    "hotkey": "ctrl+h",           "color": "#8E44AD"},
         {"label": "Spell",      "hotkey": "f7",               "color": "#27AE60"},
-        {"label": "Zoom In",    "hotkey": "ctrl+=",           "color": "#E67E22"},
         {"label": "Save As",    "hotkey": "f12",              "color": "#27AE60"}
       ]
     },
@@ -156,7 +155,6 @@
         {"label": "Replace",    "hotkey": "ctrl+h",           "color": "#8E44AD"},
         {"label": "Slideshow",  "hotkey": "f5",               "color": "#27AE60"},
         {"label": "Slide From", "hotkey": "shift+f5",         "color": "#27AE60"},
-        {"label": "Zoom In",    "hotkey": "ctrl+=",           "color": "#E67E22"},
         {"label": "Group",      "hotkey": "ctrl+g",           "color": "#8E44AD"},
         {"label": "Ungroup",    "hotkey": "ctrl+shift+g",     "color": "#8E44AD"}
       ]
@@ -185,7 +183,7 @@
         {"label": "Mute",       "hotkey": "ctrl+shift+m",     "color": "#C0392B"},
         {"label": "Video",      "hotkey": "ctrl+shift+o",     "color": "#E67E22"},
         {"label": "Share",      "hotkey": "ctrl+shift+e",     "color": "#2980B9"},
-        {"label": "Chat",       "hotkey": "ctrl+shift+i",     "color": "#2980B9"},
+        {"label": "Chat",       "hotkey": "ctrl+2",           "color": "#2980B9"},
         {"label": "Raise Hand", "hotkey": "ctrl+shift+k",     "color": "#F39C12"},
         {"label": "Accept Call","hotkey": "ctrl+shift+a",     "color": "#27AE60"},
         {"label": "Decline",    "hotkey": "ctrl+shift+d",     "color": "#C0392B"},
@@ -215,7 +213,7 @@
         {"label": "Undo",       "hotkey": "ctrl+z",           "color": "#E67E22"},
         {"label": "History",    "hotkey": "ctrl+alt+z",       "color": "#E67E22"},
         {"label": "Save Web",   "hotkey": "ctrl+shift+alt+s", "color": "#27AE60"},
-        {"label": "Flatten",    "hotkey": "ctrl+shift+e",     "color": "#C0392B"}
+        {"label": "Merge Vis.", "hotkey": "ctrl+shift+e",     "color": "#C0392B"}
       ]
     },
 
