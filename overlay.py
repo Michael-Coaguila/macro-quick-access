@@ -8,6 +8,7 @@ import logging
 import math
 import os
 import subprocess
+import time
 import webbrowser
 
 import pyautogui
@@ -1079,6 +1080,7 @@ class OverlayWindow(QWidget):
             pyautogui.hotkey(*keys)
             return
         KEYUP = 0x0002
+        DELAY = 0.02  # 20ms entre eventos — necesario para que el SO procese cada tecla
         try:
             # Presionar todas las teclas en orden
             for k in keys:
@@ -1087,6 +1089,7 @@ class OverlayWindow(QWidget):
                     win32api.keybd_event(vk, 0, ext, 0)
                 else:
                     pyautogui.keyDown(k)
+                time.sleep(DELAY)
             # Soltar en orden inverso
             for k in reversed(keys):
                 if k in self._RIGHT_MOD_VK:
@@ -1094,6 +1097,7 @@ class OverlayWindow(QWidget):
                     win32api.keybd_event(vk, 0, ext | KEYUP, 0)
                 else:
                     pyautogui.keyUp(k)
+                time.sleep(DELAY)
         except Exception as e:
             _log.warning("Error enviando combo con mods derechos: %s", e)
 
