@@ -288,6 +288,9 @@ class ShortcutEditDialog(QDialog):
     _TYPE_TO_IDX = {"hotkey": 0, "url": 1, "app": 2}
     _IDX_TO_TYPE = {0: "hotkey", 1: "url", 2: "app"}
 
+    # VK codes de Windows para modificadores lado derecho
+    _RIGHT_VK = {0xA1: "shiftright", 0xA3: "ctrlright", 0xA5: "altright"}
+
     def __init__(self, parent=None, label="", hotkey="", color="#2980B9",
                  btn_type="hotkey", action=""):
         super().__init__(parent)
@@ -422,6 +425,8 @@ class ShortcutEditDialog(QDialog):
 
     def _toggle_recording(self):
         self._recording = not self._recording
+        self._right_mods_held = set()
+        self._right_mods_order = []
         if self._recording:
             self._record_btn.setText("⏹ Grabando…")
             self._record_btn.setStyleSheet("""
@@ -439,12 +444,17 @@ class ShortcutEditDialog(QDialog):
             self._record_hint.setText("")
 
     def event(self, event):
-        """Override para capturar Tab (y otras teclas especiales) durante la grabación."""
+        """Override para capturar Tab y teclas especiales (y KeyRelease) durante la grabación."""
         from PyQt5.QtCore import QEvent
-        if self._recording and event.type() == QEvent.KeyPress:
-            self.keyPressEvent(event)
-            event.accept()
-            return True
+        if self._recording:
+            if event.type() == QEvent.KeyPress:
+                self.keyPressEvent(event)
+                event.accept()
+                return True
+            if event.type() == QEvent.KeyRelease:
+                self._on_key_release_recording(event)
+                event.accept()
+                return True
         return super().event(event)
 
     def keyPressEvent(self, event):
@@ -453,19 +463,27 @@ class ShortcutEditDialog(QDialog):
             return
 
         key = event.key()
-        # Ignorar pulsaciones de solo-modificador
-        if key in (Qt.Key_Control, Qt.Key_Alt, Qt.Key_Shift, Qt.Key_Meta,
-                   Qt.Key_unknown):
+        vk  = event.nativeVirtualKey()
+
+        # Modificador presionado → acumular si es lado derecho, ignorar si es izquierdo
+        if key in (Qt.Key_Control, Qt.Key_Alt, Qt.Key_Shift, Qt.Key_AltGr, Qt.Key_Meta):
+            if vk in self._RIGHT_VK and vk not in self._right_mods_held:
+                self._right_mods_held.add(vk)
+                self._right_mods_order.append(vk)
             return
 
+        if key == Qt.Key_unknown:
+            return
+
+        # Tecla principal presionada → finalizar combo
         mods = event.modifiers()
         parts = []
         if mods & Qt.ControlModifier:
-            parts.append("ctrl")
+            parts.append("ctrlright" if 0xA3 in self._right_mods_held else "ctrl")
         if mods & Qt.AltModifier:
-            parts.append("alt")
+            parts.append("altright"  if 0xA5 in self._right_mods_held else "alt")
         if mods & Qt.ShiftModifier:
-            parts.append("shift")
+            parts.append("shiftright" if 0xA1 in self._right_mods_held else "shift")
         if mods & Qt.MetaModifier:
             parts.append("win")
 
@@ -473,9 +491,28 @@ class ShortcutEditDialog(QDialog):
         if key_name:
             parts.append(key_name)
 
-        hotkey = "+".join(parts)
+        if parts:
+            self._finish_recording("+".join(parts))
+
+    def _on_key_release_recording(self, event):
+        """Finaliza la grabación cuando se suelta un modificador-derecha sin haber pulsado otra tecla."""
+        vk = event.nativeVirtualKey()
+        if vk not in self._RIGHT_VK or vk not in self._right_mods_held:
+            return
+        self._right_mods_held.discard(vk)
+        # Si ya no queda ningún modificador → grabar el combo de mods solos
+        remaining = event.modifiers() & (Qt.ControlModifier | Qt.AltModifier |
+                                         Qt.ShiftModifier | Qt.MetaModifier)
+        if not self._right_mods_held and not remaining:
+            parts = [self._RIGHT_VK[v] for v in self._right_mods_order if v in self._RIGHT_VK]
+            if parts:
+                self._finish_recording("+".join(parts))
+
+    def _finish_recording(self, hotkey: str):
         self._hotkey_edit.setText(hotkey)
         self._recording = False
+        self._right_mods_held = set()
+        self._right_mods_order = []
         self._record_btn.setText("🔴 Grabar")
         self._record_btn.setStyleSheet(BTN_STYLE_DANGER)
         self._record_hint.setText(f"Grabado: {hotkey}")
