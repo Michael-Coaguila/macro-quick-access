@@ -133,6 +133,19 @@ COMBO_STYLE = """
     }
 """
 
+MOD_BTN_STYLE = """
+    QPushButton {
+        background: #3a3a3a; color: #aaa;
+        border: 1px solid #555; border-radius: 5px;
+        font-size: 11px; font-weight: bold; padding: 2px 6px;
+    }
+    QPushButton:checked {
+        background: #2471a3; color: white; border-color: #4a90d9;
+    }
+    QPushButton:hover { background: #4a4a4a; }
+    QPushButton:checked:hover { background: #1a6090; }
+"""
+
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Helpers de diálogo — siempre aparecen encima del overlay (WindowStaysOnTopHint)
@@ -291,11 +304,18 @@ class ShortcutEditDialog(QDialog):
     # VK codes de Windows para modificadores lado derecho
     _RIGHT_VK = {0xA1: "shiftright", 0xA3: "ctrlright", 0xA5: "altright"}
 
+    # Orden canónico al reconstruir el string de atajo
+    _MOD_ORDER = ["ctrl", "ctrlright", "alt", "altright", "shift", "shiftright", "win"]
+    # Pares mutuamente excluyentes (izquierdo ↔ derecho)
+    _MOD_PAIRS = [("ctrl", "ctrlright"), ("alt", "altright"), ("shift", "shiftright")]
+
     def __init__(self, parent=None, label="", hotkey="", color="#2980B9",
                  btn_type="hotkey", action=""):
         super().__init__(parent)
         self._color = color
         self._recording = False
+        self._mod_btns: dict = {}
+        self._mod_active: dict = {m: False for m in self._MOD_ORDER}
 
         self.setWindowTitle("Configurar Botón")
         self.setModal(True)
@@ -335,28 +355,72 @@ class ShortcutEditDialog(QDialog):
         self._action_label = QLabel("Combinación de teclas:")
         layout.addWidget(self._action_label)
 
+        # Fila: campo de texto editable + botón limpiar
         hotkey_row = QHBoxLayout()
-        # Valor inicial: hotkey si es tipo hotkey, action si es URL/App
         initial_value = hotkey if btn_type == "hotkey" else action
         self._hotkey_edit = QLineEdit(initial_value)
         self._hotkey_edit.setStyleSheet(INPUT_STYLE)
         hotkey_row.addWidget(self._hotkey_edit, 1)
+        clear_btn = QPushButton("✕")
+        clear_btn.setFixedSize(30, 36)
+        clear_btn.setStyleSheet(BTN_STYLE_NEUTRAL)
+        clear_btn.setFocusPolicy(Qt.NoFocus)
+        clear_btn.setToolTip("Limpiar atajo")
+        clear_btn.clicked.connect(self._clear_hotkey)
+        hotkey_row.addWidget(clear_btn)
+        layout.addLayout(hotkey_row)
+
+        # ── Compositor visual (modificadores + selector de tecla) ──────────────
+        self._mod_widget = QWidget()
+        mod_vbox = QVBoxLayout(self._mod_widget)
+        mod_vbox.setContentsMargins(0, 4, 0, 0)
+        mod_vbox.setSpacing(4)
+
+        # Fila 1: modificadores estándar
+        row1 = QHBoxLayout()
+        row1.setSpacing(4)
+        for mod, lbl in [("ctrl", "Ctrl"), ("alt", "Alt"), ("shift", "Shift"), ("win", "Win")]:
+            row1.addWidget(self._make_mod_btn(mod, lbl))
+        mod_vbox.addLayout(row1)
+
+        # Fila 2: modificadores lado derecho
+        row2 = QHBoxLayout()
+        row2.setSpacing(4)
+        for mod, lbl in [("altright", "AltGr"), ("shiftright", "RShift"), ("ctrlright", "RCtrl")]:
+            row2.addWidget(self._make_mod_btn(mod, lbl))
+        row2.addStretch()
+        mod_vbox.addLayout(row2)
+
+        # Fila 3: selector de tecla + botón grabar
+        key_row = QHBoxLayout()
+        key_row.setSpacing(4)
+        self._key_picker = QComboBox()
+        self._key_picker.setFocusPolicy(Qt.NoFocus)
+        self._key_picker.setStyleSheet(COMBO_STYLE)
+        self._key_picker.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self._populate_key_picker()
+        self._key_picker.currentIndexChanged.connect(self._rebuild_hotkey)
+        key_row.addWidget(self._key_picker, 1)
 
         self._record_btn = QPushButton("🔴 Grabar")
         self._record_btn.setFocusPolicy(Qt.StrongFocus)
         self._record_btn.setFixedHeight(36)
         self._record_btn.setMinimumWidth(80)
         self._record_btn.setStyleSheet(BTN_STYLE_DANGER)
-        self._record_btn.setToolTip(
-            "Toca este botón y luego presiona la combinación de teclas en tu teclado"
-        )
+        self._record_btn.setToolTip("Presiona la combinación en tu teclado físico")
         self._record_btn.clicked.connect(self._toggle_recording)
-        hotkey_row.addWidget(self._record_btn)
-        layout.addLayout(hotkey_row)
+        key_row.addWidget(self._record_btn)
+        mod_vbox.addLayout(key_row)
+
+        layout.addWidget(self._mod_widget)
 
         self._record_hint = QLabel("")
         self._record_hint.setStyleSheet("color: #f39c12; font-size: 11px; font-style: italic;")
         layout.addWidget(self._record_hint)
+
+        # Inicializar toggles si el valor inicial es un hotkey
+        if btn_type == "hotkey" and initial_value:
+            self._parse_hotkey_to_ui(initial_value)
 
         # ── Color ──────────────────────────────────────────────────────────────
         layout.addWidget(QLabel("Color del botón:"))
@@ -405,8 +469,8 @@ class ShortcutEditDialog(QDialog):
     # ── Cambio de tipo (S6) ───────────────────────────────────────────────────
 
     def _on_type_changed(self, index: int):
-        """Actualiza etiqueta, placeholder y visibilidad del botón de grabación."""
-        labels      = ["Combinación de teclas:", "URL:", "Comando o ruta del ejecutable:"]
+        """Actualiza etiqueta, placeholder y visibilidad del compositor de hotkey."""
+        labels       = ["Combinación de teclas:", "URL:", "Comando o ruta del ejecutable:"]
         placeholders = [
             "ej: ctrl+c  o  ctrl+shift+p",
             "ej: https://google.com",
@@ -414,9 +478,8 @@ class ShortcutEditDialog(QDialog):
         ]
         self._action_label.setText(labels[index])
         self._hotkey_edit.setPlaceholderText(placeholders[index])
-        # Botón de grabación solo visible en modo Hotkey
-        self._record_btn.setVisible(index == 0)
-        # Ocultar hint de grabación si se sale del modo hotkey
+        # El compositor visual (modificadores + selector) solo aplica a Hotkey
+        self._mod_widget.setVisible(index == 0)
         if index != 0:
             self._recording = False
             self._record_hint.setText("")
@@ -509,13 +572,13 @@ class ShortcutEditDialog(QDialog):
                 self._finish_recording("+".join(parts))
 
     def _finish_recording(self, hotkey: str):
-        self._hotkey_edit.setText(hotkey)
         self._recording = False
         self._right_mods_held = set()
         self._right_mods_order = []
         self._record_btn.setText("🔴 Grabar")
         self._record_btn.setStyleSheet(BTN_STYLE_DANGER)
         self._record_hint.setText(f"Grabado: {hotkey}")
+        self._parse_hotkey_to_ui(hotkey)  # sincroniza toggles y selector
 
     @staticmethod
     def _qt_key_to_str(key: int) -> str:
@@ -549,6 +612,122 @@ class ShortcutEditDialog(QDialog):
             Qt.Key_Period: ".", Qt.Key_NumberSign: "#",
         }
         return mapping.get(key, "")
+
+    # ── Compositor visual de hotkeys ──────────────────────────────────────────
+
+    def _make_mod_btn(self, mod: str, label: str) -> QPushButton:
+        """Crea un botón de modificador checkable y lo registra en _mod_btns."""
+        btn = QPushButton(label)
+        btn.setCheckable(True)
+        btn.setFocusPolicy(Qt.NoFocus)
+        btn.setFixedHeight(28)
+        btn.setStyleSheet(MOD_BTN_STYLE)
+        btn.clicked.connect(lambda checked, m=mod: self._on_mod_toggle(m, checked))
+        self._mod_btns[mod] = btn
+        return btn
+
+    def _on_mod_toggle(self, mod: str, checked: bool):
+        """Activa/desactiva un modificador; desactiva el par opuesto si aplica."""
+        for a, b in self._MOD_PAIRS:
+            if mod == a and checked:
+                self._set_mod(b, False)
+            elif mod == b and checked:
+                self._set_mod(a, False)
+        self._mod_active[mod] = checked
+        self._rebuild_hotkey()
+
+    def _set_mod(self, mod: str, active: bool):
+        """Actualiza estado y botón de un modificador sin disparar rebuild."""
+        self._mod_active[mod] = active
+        btn = self._mod_btns.get(mod)
+        if btn:
+            btn.setChecked(active)
+
+    def _populate_key_picker(self):
+        """Rellena el selector de tecla con grupos de opciones."""
+        self._key_picker.addItem("— tecla —", "")
+        groups = [
+            ("Letras",    [(c.upper(), c) for c in "abcdefghijklmnopqrstuvwxyz"]),
+            ("Números",   [(str(i), str(i)) for i in range(10)]),
+            ("Función",   [(f"F{i}", f"f{i}") for i in range(1, 13)]),
+            ("Flechas",   [("← Izq", "left"), ("→ Der", "right"),
+                            ("↑ Arr", "up"),  ("↓ Abj", "down")]),
+            ("Numpad",    [(f"Num {i}", f"num{i}") for i in range(10)] + [
+                            ("Num +", "num+"), ("Num −", "num-"),
+                            ("Num *", "num*"), ("Num /", "num/")]),
+            ("Especiales", [
+                ("Space",      "space"),    ("Tab",        "tab"),
+                ("Enter",      "enter"),    ("Esc",        "esc"),
+                ("Supr",       "delete"),   ("Retroceso",  "backspace"),
+                ("Inicio",     "home"),     ("Fin",        "end"),
+                ("Re Pág",     "pageup"),   ("Av Pág",     "pagedown"),
+                ("Insert",     "insert"),   ("Impr Pant",  "printscreen"),
+                ("Pausa",      "pause"),
+            ]),
+            ("Símbolo",   [
+                (".",  "."), (",",  ","),  (";", ";"), ("'", "'"),
+                ("-",  "minus"), ("+", "plus"), ("=", "="),
+                ("[",  "["),  ("]",  "]"),
+                ("` (grave)", "grave"), ("/  (slash)", "slash"),
+                ("\\ (backslash)", "backslash"),
+            ]),
+        ]
+        model = self._key_picker.model()
+        for group_name, items in groups:
+            self._key_picker.addItem(f"── {group_name} ──", None)
+            model.item(self._key_picker.count() - 1).setEnabled(False)
+            for display, value in items:
+                self._key_picker.addItem(display, value)
+
+    def _rebuild_hotkey(self):
+        """Reconstruye el campo de texto a partir del estado de modificadores + selector."""
+        if self._type_combo.currentIndex() != 0:
+            return
+        parts = [m for m in self._MOD_ORDER if self._mod_active.get(m)]
+        key = self._key_picker.currentData()
+        if key:
+            parts.append(key)
+        self._hotkey_edit.setText("+".join(parts))
+
+    def _parse_hotkey_to_ui(self, hotkey_str: str):
+        """Parsea un string de atajo y actualiza los toggles y el selector."""
+        # Resetear estado actual sin disparar rebuild
+        for m in self._MOD_ORDER:
+            self._set_mod(m, False)
+        # Bloquear señal del picker durante el parse para no disparar rebuild prematuro
+        self._key_picker.blockSignals(True)
+        self._key_picker.setCurrentIndex(0)
+        self._key_picker.blockSignals(False)
+
+        parts = [p.strip().lower() for p in hotkey_str.split("+") if p.strip()]
+        key_found = False
+        for part in parts:
+            if part in self._mod_active:
+                self._set_mod(part, True)
+            else:
+                # Buscar en el picker
+                for i in range(self._key_picker.count()):
+                    if self._key_picker.itemData(i) == part:
+                        self._key_picker.blockSignals(True)
+                        self._key_picker.setCurrentIndex(i)
+                        self._key_picker.blockSignals(False)
+                        key_found = True
+                        break
+        # Actualizar el campo de texto con el estado final
+        self._rebuild_hotkey()
+        # Si el campo quedó vacío pero había texto original, restaurarlo
+        if not self._hotkey_edit.text() and hotkey_str:
+            self._hotkey_edit.setText(hotkey_str)
+
+    def _clear_hotkey(self):
+        """Limpia el atajo y resetea todos los controles."""
+        self._hotkey_edit.clear()
+        for m in list(self._mod_active):
+            self._set_mod(m, False)
+        self._key_picker.blockSignals(True)
+        self._key_picker.setCurrentIndex(0)
+        self._key_picker.blockSignals(False)
+        self._record_hint.setText("")
 
     # ── Color ──────────────────────────────────────────────────────────────────
 
