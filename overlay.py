@@ -1158,9 +1158,17 @@ class OverlayWindow(QWidget):
         self._main_layout.setContentsMargins(0, 0, 0, 0)
         self._main_layout.setSpacing(0)
 
-        # Obtener el tamaño colapsado con adjustSize y registrarlo
+        # Obtener el tamaño del ícono colapsado
         self.adjustSize()
-        end_rect = self.geometry()
+        icon_w, icon_h = self.width(), self.height()
+
+        # Destino: posición preferida del usuario (window_pos), no la física actual
+        # — que puede haber cambiado si la ventana se auto-clampeó al expandirse cerca de un borde.
+        saved_x, saved_y = self._pm.get_window_pos()
+        screen = QApplication.primaryScreen().availableGeometry()
+        icon_x = max(screen.left(), min(saved_x, screen.right()  - icon_w))
+        icon_y = max(screen.top(),  min(saved_y, screen.bottom() - icon_h))
+        end_rect = QRect(icon_x, icon_y, icon_w, icon_h)
 
         # Restaurar la geometría expandida para comenzar la animación desde ahí
         self.setGeometry(start_rect)
@@ -1257,7 +1265,8 @@ class OverlayWindow(QWidget):
             target_w, target_h = self._pm.get_window_size()  # D1: tamaño auto-fit ya guardado
             new_x = max(screen.left(), min(self.x(), screen.right() - target_w))
             new_y = max(screen.top(), min(self.y(), screen.bottom() - target_h))
-            self._pm.save_window_pos(new_x, new_y)
+            # No guardar la posición clampeada: window_pos solo se actualiza cuando
+            # el usuario arrastra explícitamente la ventana (mouseReleaseEvent).
 
         # S9: animar de colapsado a expandido (start_rect capturado al inicio antes de resize)
         end_rect = QRect(new_x, new_y, target_w, target_h)
