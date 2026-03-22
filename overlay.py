@@ -1221,8 +1221,12 @@ class OverlayWindow(QWidget):
             self._profile_combo.setEnabled(False)
 
             target_w, target_h = self._pm.get_edit_size()
-            new_x = max(screen.left(), min(self.x(), screen.right() - target_w))
-            new_y = max(screen.top(), min(self.y(), screen.bottom() - target_h))
+            PADDING = 8
+            center_right_x = screen.left() + screen.width() * 3 // 4
+            new_x = center_right_x - target_w // 2
+            new_x = max(screen.left() + screen.width() // 2,
+                        min(screen.right() - target_w - PADDING, new_x))
+            new_y = screen.top() + PADDING
 
         else:
             # ── Restaurar modo uso ────────────────────────────────────────────
@@ -1269,18 +1273,29 @@ class OverlayWindow(QWidget):
     def enter_edit_mode(self):
         from edit_panel import EditPanel
         self._process_timer.stop()   # A1: no auto-switch en modo edición
-        # Guardar tamaño actual (uso) y restaurar el del modo edición
+        # Guardar tamaño y posición actuales (uso) para restaurarlos al volver
         self._pm.save_window_size(self.width(), self.height())
+        self._saved_use_pos = self.pos()
 
-        # Si aún no se ha guardado un tamaño de edición, calcularlo
-        # automáticamente: 90% de la altura de pantalla, ancho basado en contenido
-        if "edit_size" not in self._pm._data:
-            screen = QApplication.primaryScreen().availableGeometry()
-            auto_h = int(screen.height() * 0.90)
-            auto_w = max(340, min(400, int(screen.width() * 0.22)))
-            self._pm.save_edit_size(auto_w, auto_h)
+        # Calcular posición y tamaño del modo edición desde la pantalla
+        screen = QApplication.primaryScreen().availableGeometry()
+        PADDING = 8
 
-        edit_w, edit_h = self._pm.get_edit_size()
+        # Altura: siempre ocupa toda la altura disponible con padding
+        edit_h = screen.height() - 2 * PADDING
+
+        # Ancho: preservar el guardado si existe, o calcular automáticamente
+        edit_w, _ = self._pm.get_edit_size()
+        if edit_w <= 0:
+            edit_w = max(340, min(420, int(screen.width() * 0.22)))
+        self._pm.save_edit_size(edit_w, edit_h)
+
+        # Posición: centro del bloque derecho de la pantalla
+        center_right_x = screen.left() + screen.width() * 3 // 4
+        edit_x = center_right_x - edit_w // 2
+        edit_x = max(screen.left() + screen.width() // 2,
+                     min(screen.right() - edit_w - PADDING, edit_x))
+        edit_y = screen.top() + PADDING
 
         self._btn_widget.hide()
         self._tab_bar.hide()
@@ -1304,6 +1319,7 @@ class OverlayWindow(QWidget):
         self._done_btn.show()
         self._mode = "edit"
         self.setWindowOpacity(1.0)   # Edición siempre completamente opaca
+        self.move(edit_x, edit_y)
         self.resize(edit_w, edit_h)
 
     def enter_use_mode(self):
@@ -1345,6 +1361,12 @@ class OverlayWindow(QWidget):
         self.setWindowOpacity(self._pm.get_opacity())
         # D1: altura ya ajustada por _fit_height() dentro de _load_profile()
         self._process_timer.start()   # A1: reanudar auto-switch al volver a uso
+        # Restaurar la posición del modo uso (guardada al entrar a edición)
+        if hasattr(self, '_saved_use_pos'):
+            screen = QApplication.primaryScreen().availableGeometry()
+            use_x = max(screen.left(), min(self._saved_use_pos.x(), screen.right()  - self.width()))
+            use_y = max(screen.top(),  min(self._saved_use_pos.y(), screen.bottom() - self.height()))
+            self.move(use_x, use_y)
 
     def reload_overlay(self):
         self.enter_use_mode()
