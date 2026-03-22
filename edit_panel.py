@@ -1320,9 +1320,8 @@ class EditPanel(QWidget):
             return
         self._pm.duplicate_profile(src, new_name)
         self._current_profile = new_name
-        self._refresh_combos()
+        self._pm.set_active_profile(new_name)
         self._refresh_list()
-        self._notify_host()
 
     def _delete_profile(self):
         profiles = self._pm.get_profile_names()
@@ -1402,7 +1401,6 @@ class EditPanel(QWidget):
             buttons.insert(index + 1, copy.deepcopy(buttons[index]))
             self._pm.set_buttons(self._current_profile, buttons)
             self._refresh_list()
-            self._notify_host()
 
     def _move_up(self):
         if self._selected_index <= 0:
