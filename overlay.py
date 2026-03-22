@@ -231,6 +231,16 @@ class ProfileManager:
             self._data["profiles"][name] = {"buttons_per_page": 9, "process": "", "buttons": []}
             self.save()
 
+    def duplicate_profile(self, source: str, new_name: str) -> bool:
+        """Crea una copia exacta del perfil `source` con el nombre `new_name`."""
+        if not new_name or new_name in self._data["profiles"]:
+            return False
+        if source not in self._data["profiles"]:
+            return False
+        self._data["profiles"][new_name] = copy.deepcopy(self._data["profiles"][source])
+        self.save()
+        return True
+
     def rename_profile(self, old: str, new: str):
         if old in self._data["profiles"] and new and new not in self._data["profiles"]:
             self._data["profiles"][new] = self._data["profiles"].pop(old)

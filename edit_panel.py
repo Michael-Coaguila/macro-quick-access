@@ -3,6 +3,7 @@ edit_panel.py — Panel de edición embebido en el overlay.
 Permite gestionar perfiles y atajos con una interfaz táctil amigable.
 """
 
+import copy
 import json
 import logging
 
@@ -804,8 +805,9 @@ class ShortcutItemWidget(QFrame):
     Puede ser: hotkey normal, URL, App, o separador visual.
     """
 
-    edit_requested   = pyqtSignal(int)
-    delete_requested = pyqtSignal(int)
+    edit_requested      = pyqtSignal(int)
+    duplicate_requested = pyqtSignal(int)
+    delete_requested    = pyqtSignal(int)
 
     def __init__(self, index: int, data: dict, edit_panel=None, parent=None):
         super().__init__(parent)
@@ -893,14 +895,25 @@ class ShortcutItemWidget(QFrame):
         edit_btn.setFocusPolicy(Qt.NoFocus)
         edit_btn.setFixedSize(32, 32)
         edit_btn.setStyleSheet(BTN_STYLE_NEUTRAL)
+        edit_btn.setToolTip("Editar")
         edit_btn.clicked.connect(lambda: self.edit_requested.emit(self._index))
         h.addWidget(edit_btn)
+
+        # Botón Duplicar
+        dup_btn = QPushButton("📋")
+        dup_btn.setFocusPolicy(Qt.NoFocus)
+        dup_btn.setFixedSize(32, 32)
+        dup_btn.setStyleSheet(BTN_STYLE_NEUTRAL)
+        dup_btn.setToolTip("Duplicar atajo")
+        dup_btn.clicked.connect(lambda: self.duplicate_requested.emit(self._index))
+        h.addWidget(dup_btn)
 
         # Botón Eliminar
         del_btn = QPushButton("🗑")
         del_btn.setFocusPolicy(Qt.NoFocus)
         del_btn.setFixedSize(32, 32)
         del_btn.setStyleSheet(BTN_STYLE_DANGER)
+        del_btn.setToolTip("Eliminar")
         del_btn.clicked.connect(lambda: self.delete_requested.emit(self._index))
         h.addWidget(del_btn)
 
@@ -999,6 +1012,14 @@ class EditPanel(QWidget):
         ren_p_btn.setStyleSheet(BTN_STYLE_NEUTRAL)
         ren_p_btn.clicked.connect(self._rename_profile)
         row2.addWidget(ren_p_btn)
+
+        dup_p_btn = QPushButton("📋 Duplicar")
+        dup_p_btn.setFocusPolicy(Qt.NoFocus)
+        dup_p_btn.setMinimumHeight(30)
+        dup_p_btn.setStyleSheet(BTN_STYLE_NEUTRAL)
+        dup_p_btn.setToolTip("Crear una copia de este perfil con todos sus atajos")
+        dup_p_btn.clicked.connect(self._duplicate_profile)
+        row2.addWidget(dup_p_btn)
 
         del_p_btn = QPushButton("🗑")
         del_p_btn.setFocusPolicy(Qt.NoFocus)
@@ -1187,6 +1208,7 @@ class EditPanel(QWidget):
         for i, btn_data in enumerate(buttons):
             widget = ShortcutItemWidget(i, btn_data, self)
             widget.edit_requested.connect(self._edit_shortcut)
+            widget.duplicate_requested.connect(self._duplicate_shortcut)
             widget.delete_requested.connect(self._delete_shortcut)
             self._list_layout.insertWidget(i, widget)
 
@@ -1282,6 +1304,26 @@ class EditPanel(QWidget):
             self._current_profile = new_name
             self._refresh_list()
 
+    def _duplicate_profile(self):
+        src = self._current_profile
+        new_name, ok = _dlg_get_text(
+            self, "Duplicar perfil",
+            f'Nombre para la copia de "{src}":',
+            default=f"{src} (copia)"
+        )
+        if not ok or not new_name.strip():
+            return
+        new_name = new_name.strip()
+        if new_name in self._pm.get_profile_names():
+            _dlg_warning(self, "Nombre ya existe",
+                         f'Ya existe un perfil llamado "{new_name}".')
+            return
+        self._pm.duplicate_profile(src, new_name)
+        self._current_profile = new_name
+        self._refresh_combos()
+        self._refresh_list()
+        self._notify_host()
+
     def _delete_profile(self):
         profiles = self._pm.get_profile_names()
         if len(profiles) <= 1:
@@ -1352,6 +1394,15 @@ class EditPanel(QWidget):
             buttons.pop(index)
             self._pm.set_buttons(self._current_profile, buttons)
             self._refresh_list()
+
+    def _duplicate_shortcut(self, index: int):
+        """Crea una copia del botón en `index` e inserta inmediatamente después."""
+        buttons = self._pm.get_buttons(self._current_profile)
+        if 0 <= index < len(buttons):
+            buttons.insert(index + 1, copy.deepcopy(buttons[index]))
+            self._pm.set_buttons(self._current_profile, buttons)
+            self._refresh_list()
+            self._notify_host()
 
     def _move_up(self):
         if self._selected_index <= 0:
