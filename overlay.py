@@ -1063,16 +1063,33 @@ class OverlayWindow(QWidget):
 
     @staticmethod
     def _send_win_combo(keys: list):
+        """Envía combinaciones con la tecla Win manteniendo todos los modificadores
+        simultáneamente antes de presionar la tecla final.
+        pyautogui.press() hacía press+release individual de cada tecla, dejando
+        Win solo un instante → Windows abría Search. Se usa keyDown/keyUp en su lugar."""
         if not WIN32_AVAILABLE:
             return
         other = [k for k in keys if k != "win"]
+        # Separar modificadores de la tecla principal (la última que no es modificador)
+        mod_names = {"shift", "shiftright", "ctrl", "ctrlright", "alt", "altright"}
+        mods  = [k for k in other if k in mod_names]
+        chars = [k for k in other if k not in mod_names]
         try:
+            # Bajar Win + todos los modificadores juntos
             win32api.keybd_event(win32con.VK_LWIN, 0, 0, 0)
-            for k in other:
-                pyautogui.press(k)
+            for m in mods:
+                pyautogui.keyDown(m)
+            # Presionar y soltar cada tecla final
+            for c in chars:
+                pyautogui.keyDown(c)
+            for c in reversed(chars):
+                pyautogui.keyUp(c)
+            # Soltar modificadores + Win en orden inverso
+            for m in reversed(mods):
+                pyautogui.keyUp(m)
             win32api.keybd_event(win32con.VK_LWIN, 0, win32con.KEYEVENTF_KEYUP, 0)
         except Exception as e:
-            _log.warning("Error enviando combinación Win32: %s", e)
+            _log.warning("Error enviando combinación Win: %s", e)
 
     def _send_with_right_mods(self, keys: list):
         """Envía combinaciones que incluyen modificadores del lado derecho vía win32api."""

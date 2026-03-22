@@ -304,8 +304,8 @@ class ShortcutEditDialog(QDialog):
     # VK codes de Windows para modificadores lado derecho
     _RIGHT_VK = {0xA1: "shiftright", 0xA3: "ctrlright", 0xA5: "altright"}
 
-    # Orden canónico al reconstruir el string de atajo
-    _MOD_ORDER = ["ctrl", "ctrlright", "alt", "altright", "shift", "shiftright", "win"]
+    # Orden canónico al reconstruir el string de atajo (Win primero, como es convención)
+    _MOD_ORDER = ["win", "ctrl", "ctrlright", "alt", "altright", "shift", "shiftright"]
     # Pares mutuamente excluyentes (izquierdo ↔ derecho)
     _MOD_PAIRS = [("ctrl", "ctrlright"), ("alt", "altright"), ("shift", "shiftright")]
 
