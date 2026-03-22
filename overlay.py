@@ -1038,6 +1038,13 @@ class OverlayWindow(QWidget):
 
     # ── Envío de hotkey ───────────────────────────────────────────────────────
 
+    # VK codes y flags para modificadores del lado derecho
+    _RIGHT_MOD_VK = {
+        "shiftright": (0xA1, 0),                           # VK_RSHIFT
+        "ctrlright":  (0xA3, 0x0001),                      # VK_RCONTROL + EXTENDEDKEY
+        "altright":   (0xA5, 0x0001),                      # VK_RMENU    + EXTENDEDKEY
+    }
+
     def send_hotkey(self, hotkey_string: str):
         keys = [k.strip() for k in hotkey_string.lower().split("+")]
         key_map = {
@@ -1048,6 +1055,8 @@ class OverlayWindow(QWidget):
 
         if "win" in mapped:
             QTimer.singleShot(60, lambda: self._send_win_combo(mapped))
+        elif any(k in self._RIGHT_MOD_VK for k in mapped):
+            QTimer.singleShot(60, lambda: self._send_with_right_mods(mapped))
         else:
             QTimer.singleShot(60, lambda: pyautogui.hotkey(*mapped))
 
@@ -1063,6 +1072,30 @@ class OverlayWindow(QWidget):
             win32api.keybd_event(win32con.VK_LWIN, 0, win32con.KEYEVENTF_KEYUP, 0)
         except Exception as e:
             _log.warning("Error enviando combinación Win32: %s", e)
+
+    def _send_with_right_mods(self, keys: list):
+        """Envía combinaciones que incluyen modificadores del lado derecho vía win32api."""
+        if not WIN32_AVAILABLE:
+            pyautogui.hotkey(*keys)
+            return
+        KEYUP = 0x0002
+        try:
+            # Presionar todas las teclas en orden
+            for k in keys:
+                if k in self._RIGHT_MOD_VK:
+                    vk, ext = self._RIGHT_MOD_VK[k]
+                    win32api.keybd_event(vk, 0, ext, 0)
+                else:
+                    pyautogui.keyDown(k)
+            # Soltar en orden inverso
+            for k in reversed(keys):
+                if k in self._RIGHT_MOD_VK:
+                    vk, ext = self._RIGHT_MOD_VK[k]
+                    win32api.keybd_event(vk, 0, ext | KEYUP, 0)
+                else:
+                    pyautogui.keyUp(k)
+        except Exception as e:
+            _log.warning("Error enviando combo con mods derechos: %s", e)
 
     # ── Modos ─────────────────────────────────────────────────────────────────
 
