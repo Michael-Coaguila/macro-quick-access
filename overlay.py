@@ -16,7 +16,7 @@ from PyQt5.QtCore import Qt, QTimer, QPoint, QRect, QPropertyAnimation, QEasingC
 from PyQt5.QtGui import QColor, QPainter, QPainterPath, QFont, QPen, QPixmap
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QPushButton, QGridLayout, QVBoxLayout, QHBoxLayout,
-    QComboBox, QLabel, QSizePolicy, QFrame
+    QComboBox, QLabel, QSizePolicy, QFrame, QMenu
 )
 
 _log = logging.getLogger(__name__)
@@ -831,7 +831,7 @@ class OverlayWindow(QWidget):
         # ── Perfil base (pin) ─────────────────────────────────────────────────
         self._pin_btn = self._make_icon_btn("📌", "#444", tooltip="Perfil base siempre visible")
         self._pin_btn.setFixedSize(26, 26)
-        self._pin_btn.clicked.connect(self._toggle_pinned_profile)
+        self._pin_btn.clicked.connect(self._show_pin_menu)
         h.addWidget(self._pin_btn)
 
         # ── Editar / Listo (mismo slot, se alternan según el modo) ────────────
@@ -1427,7 +1427,7 @@ class OverlayWindow(QWidget):
         bar = QWidget()
         bar.setFixedHeight(30)
         h = QHBoxLayout(bar)
-        h.setContentsMargins(0, 2, 30, 0)   # 30px derecha: espacio para el ⊿ flotante
+        h.setContentsMargins(30, 2, 30, 0)   # márgenes simétricos: pestañas centradas, ⊿ flota a la derecha
         h.setSpacing(3)
 
         self._tab_active_btn = QPushButton("")
@@ -1479,22 +1479,53 @@ class OverlayWindow(QWidget):
         self._profile_name_label.setText(profile)
         self._update_tab_bar()
 
-    def _toggle_pinned_profile(self):
-        """Cicla entre: sin pin → cada perfil distinto al activo → sin pin."""
-        names = self._pm.get_profile_names()
-        current_pin = self._pm.get_pinned_profile()
+    def _show_pin_menu(self):
+        """Muestra un menú desplegable para seleccionar o desactivar el perfil base."""
+        menu = QMenu(self)
+        menu.setStyleSheet("""
+            QMenu {
+                background: #2d2d2d; color: white;
+                border: 1px solid #555; border-radius: 4px;
+                padding: 2px;
+            }
+            QMenu::item { padding: 6px 20px 6px 12px; font-size: 11px; }
+            QMenu::item:selected { background: #4a90d9; border-radius: 3px; }
+            QMenu::item:disabled { color: #666; }
+            QMenu::separator { background: #444; height: 1px; margin: 3px 8px; }
+        """)
+
+        pinned = self._pm.get_pinned_profile()
         active = self._pm.get_active_profile()
-        candidates = [""] + [n for n in names if n != active]
-        idx = candidates.index(current_pin) if current_pin in candidates else 0
-        next_pin = candidates[(idx + 1) % len(candidates)]
 
-        self._pm.set_pinned_profile(next_pin)
+        # Opción para desactivar (deshabilitada si no hay pin activo)
+        act_off = menu.addAction("✕   Sin perfil base")
+        act_off.setEnabled(bool(pinned))
+        menu.addSeparator()
 
-        # Si se quita el pin, volver a mostrar la pestaña activa
-        if not next_pin:
+        # Un ítem por perfil disponible (todos excepto el activo)
+        for name in self._pm.get_profile_names():
+            if name == active:
+                continue
+            label = f"✓   {name}" if name == pinned else f"      {name}"
+            action = menu.addAction(label)
+            action.setData(name)
+
+        # Mostrar el menú justo debajo del botón 📌
+        pos = self._pin_btn.mapToGlobal(QPoint(0, self._pin_btn.height()))
+        chosen = menu.exec_(pos)
+
+        if chosen is None:
+            return
+
+        if chosen is act_off:
+            self._pm.set_pinned_profile("")
             self._viewing_pinned = False
             self._load_profile(active)
             self._profile_name_label.setText(active)
+        else:
+            new_pin = chosen.data()
+            if new_pin:
+                self._pm.set_pinned_profile(new_pin)
 
         self._update_pin_btn_visual()
         self._update_tab_bar()
