@@ -705,6 +705,62 @@ class OverlayWindow(QWidget):
         )
         self._main_layout.addWidget(self._profile_name_label)
 
+        # Barra de controles — encima del grid, así A+/A− no se desplazan al crecer la ventana
+        self._controls_bar = QWidget()
+        ctrl_h = QHBoxLayout(self._controls_bar)
+        ctrl_h.setContentsMargins(0, 2, 0, 0)   # sin margen derecho: ⊿ está en la parte inferior
+        ctrl_h.setSpacing(4)
+
+        # ── Controles de vista: opacidad + tamaño ────────────────────────────
+        self._dim_btn = self._make_icon_btn("◐", "#444", tooltip="Menos opacidad",
+                                            size=(20, 20))
+        self._dim_btn.clicked.connect(lambda: self._adjust_opacity(-0.08))
+        ctrl_h.addWidget(self._dim_btn)
+
+        self._bright_btn = self._make_icon_btn("●", "#444", tooltip="Más opacidad",
+                                               size=(20, 20))
+        self._bright_btn.clicked.connect(lambda: self._adjust_opacity(+0.08))
+        ctrl_h.addWidget(self._bright_btn)
+
+        self._size_dn_btn = self._make_icon_btn("A−", "#444", tooltip="Botones más pequeños",
+                                                size=(22, 20))
+        self._size_dn_btn.clicked.connect(lambda: self._resize_buttons(-10))
+        ctrl_h.addWidget(self._size_dn_btn)
+
+        self._size_up_btn = self._make_icon_btn("A+", "#444", tooltip="Botones más grandes",
+                                                size=(22, 20))
+        self._size_up_btn.clicked.connect(lambda: self._resize_buttons(+10))
+        ctrl_h.addWidget(self._size_up_btn)
+
+        # Separador visual entre controles de vista y navegación de páginas
+        _sep = QFrame()
+        _sep.setFrameShape(QFrame.VLine)
+        _sep.setFixedWidth(1)
+        _sep.setStyleSheet("background: #444;")
+        ctrl_h.addWidget(_sep)
+
+        # B3: botón ＋ de acceso rápido
+        self._quick_add_btn = self._make_icon_btn("＋", "#27AE60",
+                                                   tooltip="Añadir atajo rápido",
+                                                   size=(20, 20))
+        self._quick_add_btn.clicked.connect(self._quick_add_shortcut)
+        ctrl_h.addWidget(self._quick_add_btn)
+
+        self._prev_btn = self._make_icon_btn("◀", "#444", tooltip="Página anterior",
+                                             size=(20, 20))
+        self._prev_btn.clicked.connect(self._prev_page)
+        self._page_label = QLabel("1 / 1")
+        self._page_label.setStyleSheet("color: #aaaaaa; font-size: 11px;")
+        self._page_label.setAlignment(Qt.AlignCenter)
+        self._next_btn = self._make_icon_btn("▶", "#444", tooltip="Página siguiente",
+                                             size=(20, 20))
+        self._next_btn.clicked.connect(self._next_page)
+        ctrl_h.addWidget(self._prev_btn)
+        ctrl_h.addWidget(self._page_label, 1)
+        ctrl_h.addWidget(self._next_btn)
+
+        self._main_layout.addWidget(self._controls_bar)   # ANTES del grid: no se mueve al crecer
+
         # Área de contenido
         self._content_area = QWidget()
         self._content_area.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -730,66 +786,11 @@ class OverlayWindow(QWidget):
         self._swipe_filter.swipe_right.connect(
             lambda: getattr(self, '_total_pages', 1) > 1 and self._prev_page())
 
-        # Tab bar para perfil base — oculta hasta que se configure un pin
+        # Tab bar para perfil base — en la parte inferior, comparte fila visual con ⊿
         self._tab_bar = self._build_tab_bar()
         self._main_layout.addWidget(self._tab_bar)
 
-        # Barra de navegación — siempre visible en modo uso (tiene botón ＋)
-        self._nav_bar = QWidget()
-        nav_h = QHBoxLayout(self._nav_bar)
-        nav_h.setContentsMargins(0, 2, 26, 0)   # 26px derecha: espacio para el ⊿ flotante
-        nav_h.setSpacing(4)
-
-        # ── Controles de vista: opacidad + tamaño (movidos de la top bar) ────
-        self._dim_btn = self._make_icon_btn("◐", "#444", tooltip="Menos opacidad",
-                                            size=(20, 20))
-        self._dim_btn.clicked.connect(lambda: self._adjust_opacity(-0.08))
-        nav_h.addWidget(self._dim_btn)
-
-        self._bright_btn = self._make_icon_btn("●", "#444", tooltip="Más opacidad",
-                                               size=(20, 20))
-        self._bright_btn.clicked.connect(lambda: self._adjust_opacity(+0.08))
-        nav_h.addWidget(self._bright_btn)
-
-        self._size_dn_btn = self._make_icon_btn("A−", "#444", tooltip="Botones más pequeños",
-                                                size=(22, 20))
-        self._size_dn_btn.clicked.connect(lambda: self._resize_buttons(-10))
-        nav_h.addWidget(self._size_dn_btn)
-
-        self._size_up_btn = self._make_icon_btn("A+", "#444", tooltip="Botones más grandes",
-                                                size=(22, 20))
-        self._size_up_btn.clicked.connect(lambda: self._resize_buttons(+10))
-        nav_h.addWidget(self._size_up_btn)
-
-        # Separador visual entre controles de vista y navegación de páginas
-        _sep = QFrame()
-        _sep.setFrameShape(QFrame.VLine)
-        _sep.setFixedWidth(1)
-        _sep.setStyleSheet("background: #444;")
-        nav_h.addWidget(_sep)
-
-        # B3: botón ＋ de acceso rápido
-        self._quick_add_btn = self._make_icon_btn("＋", "#27AE60",
-                                                   tooltip="Añadir atajo rápido",
-                                                   size=(20, 20))
-        self._quick_add_btn.clicked.connect(self._quick_add_shortcut)
-        nav_h.addWidget(self._quick_add_btn)
-
-        self._prev_btn = self._make_icon_btn("◀", "#444", tooltip="Página anterior",
-                                             size=(20, 20))
-        self._prev_btn.clicked.connect(self._prev_page)
-        self._page_label = QLabel("1 / 1")
-        self._page_label.setStyleSheet("color: #aaaaaa; font-size: 11px;")
-        self._page_label.setAlignment(Qt.AlignCenter)
-        self._next_btn = self._make_icon_btn("▶", "#444", tooltip="Página siguiente",
-                                             size=(20, 20))
-        self._next_btn.clicked.connect(self._next_page)
-        nav_h.addWidget(self._prev_btn)
-        nav_h.addWidget(self._page_label, 1)
-        nav_h.addWidget(self._next_btn)
-
-        self._nav_bar.show()   # siempre visible en uso (el ＋ siempre está)
-        self._main_layout.addWidget(self._nav_bar)
+        self._controls_bar.show()   # siempre visible en modo uso
 
     def _build_top_bar(self) -> QWidget:
         bar = QWidget()
@@ -966,12 +967,12 @@ class OverlayWindow(QWidget):
         INNER_V     = 8    # 4+4 inner margins (D4)
         TOP_BAR     = 32
         CONTENT_TOP = 4    # content_layout top margin
-        NAV_H       = 22   # 20px botones + 2px margen superior (D3)
-        SPACING     = 8    # 4px × 2 gaps visibles (top_bar↔content, content↔nav)
+        CONTROLS_H  = 22   # 20px botones + 2px margen superior — barra encima del grid
+        SPACING     = 8    # 4px × 2 gaps visibles (top_bar↔controls, controls↔content)
 
         grid_h = grid_rows * btn_h + max(0, grid_rows - 1) * GRID_SPACING
         tab_h  = 34 if self._tab_bar.isVisible() else 0  # 30px + 4px spacing extra
-        total  = OUTER_V + INNER_V + TOP_BAR + CONTENT_TOP + grid_h + NAV_H + SPACING + tab_h + 2
+        total  = OUTER_V + INNER_V + TOP_BAR + CONTENT_TOP + grid_h + CONTROLS_H + SPACING + tab_h + 2
 
         new_h = max(100, total)
         # Quitar restricciones de altura para permitir reducir el tamaño
@@ -1142,7 +1143,7 @@ class OverlayWindow(QWidget):
         # Ejecutar el colapso normal: ocultar contenido, mostrar expand_btn
         self._top_bar.hide()
         self._content_area.hide()
-        self._nav_bar.hide()
+        self._controls_bar.hide()
         self._tab_bar.hide()
         self._resize_handle.hide()
         self._profile_name_label.hide()   # S8
@@ -1224,7 +1225,7 @@ class OverlayWindow(QWidget):
             self._size_up_btn.hide()
             self._pin_btn.hide()
             self._quick_add_btn.hide()
-            self._nav_bar.hide()
+            self._controls_bar.hide()
             self._done_btn.show()
             self._profile_combo.setEnabled(False)
 
@@ -1258,7 +1259,7 @@ class OverlayWindow(QWidget):
             self._viewing_pinned = False
             active = self._pm.get_active_profile()
             self._profile_name_label.hide()  # D2: ocultar label en uso
-            self._nav_bar.show()   # B3: nav_bar siempre visible en uso
+            self._controls_bar.show()   # controls_bar siempre visible en uso
             self._load_profile(active)   # D1: llama _fit_height() → resize() + set_window_size()
             self._update_tab_bar()
 
@@ -1324,7 +1325,7 @@ class OverlayWindow(QWidget):
         self._size_up_btn.hide()
         self._pin_btn.hide()
         self._quick_add_btn.hide()   # B3: ocultar ＋ en modo edición
-        self._nav_bar.hide()         # en edición la fila inferior no es necesaria
+        self._controls_bar.hide()         # en edición los controles de vista no son necesarios
         self._done_btn.show()
         self._mode = "edit"
         self.setWindowOpacity(1.0)   # Edición siempre completamente opaca
@@ -1362,7 +1363,7 @@ class OverlayWindow(QWidget):
         self._profile_combo.blockSignals(False)
         self._current_page = 0
         self._viewing_pinned = False
-        self._nav_bar.show()   # B3: nav_bar siempre visible en uso
+        self._controls_bar.show()   # controls_bar siempre visible en uso
         self._load_profile(active)
         # D2: ocultar label de perfil en uso (el combo ya lo muestra)
         self._profile_name_label.hide()
@@ -1426,7 +1427,7 @@ class OverlayWindow(QWidget):
         bar = QWidget()
         bar.setFixedHeight(30)
         h = QHBoxLayout(bar)
-        h.setContentsMargins(0, 2, 0, 0)
+        h.setContentsMargins(0, 2, 30, 0)   # 30px derecha: espacio para el ⊿ flotante
         h.setSpacing(3)
 
         self._tab_active_btn = QPushButton("")
