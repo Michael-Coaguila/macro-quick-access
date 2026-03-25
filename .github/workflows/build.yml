@@ -1,0 +1,33 @@
+name: Build Windows Executable
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install PyQt5 pyautogui pywin32 pynput pyinstaller
+
+      - name: Build executable
+        run: pyinstaller macro_quick_access.spec --clean
+
+      - name: Zip output
+        run: Compress-Archive -Path dist\MacroQuickAccess\* -DestinationPath MacroQuickAccess-${{ github.ref_name }}.zip
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: MacroQuickAccess-${{ github.ref_name }}.zip
+          generate_release_notes: true
