@@ -24,8 +24,11 @@ from overlay import OverlayWindow, ProfileManager
 # Logging centralizado
 # ──────────────────────────────────────────────────────────────────────────────
 def _setup_logging():
-    log_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                            "macro_quick_access.log")
+    if getattr(sys, 'frozen', False):
+        log_dir = os.path.dirname(sys.executable)
+    else:
+        log_dir = os.path.dirname(os.path.abspath(__file__))
+    log_path = os.path.join(log_dir, "macro_quick_access.log")
     logging.basicConfig(
         level=logging.WARNING,
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",

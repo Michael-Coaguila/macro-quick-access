@@ -8,6 +8,7 @@ import logging
 import math
 import os
 import subprocess
+import sys
 import time
 import webbrowser
 
@@ -20,6 +21,22 @@ from PyQt5.QtWidgets import (
 )
 
 _log = logging.getLogger(__name__)
+
+
+def _resource_path(filename: str) -> str:
+    """Ruta a un asset de solo lectura (funciona en dev y en PyInstaller)."""
+    base = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base, filename)
+
+
+def _data_path(filename: str) -> str:
+    """Ruta a un archivo de lectura/escritura junto al .exe (o al script en dev)."""
+    if getattr(sys, 'frozen', False):
+        base = os.path.dirname(sys.executable)
+    else:
+        base = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(base, filename)
+
 
 # ── Estilos compartidos ──────────────────────────────────────────────────────
 _TAB_STYLE_ON = """QPushButton {
@@ -114,8 +131,7 @@ class ProfileManager:
     """Carga y guarda perfiles desde profiles.json."""
 
     def __init__(self):
-        base = os.path.dirname(os.path.abspath(__file__))
-        self._path = os.path.join(base, "profiles.json")
+        self._path = _data_path("profiles.json")
         self._data = {}
         self.load()
 
@@ -415,8 +431,7 @@ class CollapsedIconWidget(QWidget):
         if cls._pixmap_loaded:
             return
         cls._pixmap_loaded = True
-        img_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                "icon_collapsed.png")
+        img_path = _resource_path("icon_collapsed.png")
         if os.path.exists(img_path):
             px = QPixmap(img_path)
             cls._pixmap_cache = px if not px.isNull() else None
