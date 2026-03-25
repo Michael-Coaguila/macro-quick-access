@@ -19,7 +19,6 @@ env/
 # Build / distribution
 dist/
 build/
-*.spec
 *.egg-info/
 
 # IDEs
