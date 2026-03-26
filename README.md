@@ -29,14 +29,26 @@ A floating, touch-friendly keyboard shortcut overlay for Windows — built for u
 
 ---
 
-## Requirements
+## Download
+
+The easiest way to get started — no Python required:
+
+1. Go to the [Releases](https://github.com/Michael-Coaguila/macro-quick-access/releases) page
+2. Download `MacroQuickAccess-vX.X.X.zip`
+3. Extract anywhere and run `MacroQuickAccess.exe`
+
+> **Note:** Windows may show a SmartScreen warning on first run. Click **"More info → Run anyway"** to proceed. This is normal for unsigned apps.
+
+---
+
+## Requirements (for developers)
 
 - **Windows 10 or 11**
 - **Python 3.10+**
 
 ---
 
-## Installation
+## Installation (from source)
 
 ```bash
 git clone https://github.com/Michael-Coaguila/macro-quick-access.git
